@@ -1,0 +1,9 @@
+{
+    "user": "sampostgres",
+    "password": "test121",
+    "port": 5432,
+    "rootdatabase": "postgres",
+    "database": "samdb",
+    "schema": "testschema"
+    }
+    
