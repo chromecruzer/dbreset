@@ -1,9 +1,7 @@
 import { EmployeeRecord, EmployeeSignature } from "./records&Mappings.ts/employeeRecord";
 
 
-export const dataTableNames = {
-    employees: 'employees'
-}
+
 
 export const prefix = 'api'; //used by nginx to proxy to the trac-api server
 
@@ -34,3 +32,15 @@ export interface InputToSqlMapping {
     nullify?: (string) => (InputDataType | null); // function to replace certain strings with null
     default?: (InputDataType | null); // default for fields that are not in the spreadsheet
 }
+
+export const getDataFields = {
+    employee_name:'Employee Name'
+}
+
+export const dataTableNames = {
+    employees: 'employees'
+}
+
+export type DataTableNameType = (
+    'employees' 
+)

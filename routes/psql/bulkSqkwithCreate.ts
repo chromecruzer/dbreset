@@ -1,5 +1,5 @@
 import {appendBulkData, appendUuids, datumToSql} from "./postgresql";
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { InputToSqlMapping } from "../dataTypes";
 import * as util from "util";
 

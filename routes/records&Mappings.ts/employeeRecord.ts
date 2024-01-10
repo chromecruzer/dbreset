@@ -1,7 +1,7 @@
 import { SignatureFields } from "./searchSignature";
 import _ from 'lodash'
 
-export const condensedProductTableColumns = [
+export const condensedEmployeeTableColumns = [
     {
       header: 'Employee ID',
       accessor: 'employee_id',
@@ -16,7 +16,7 @@ export const condensedProductTableColumns = [
     },
 ]
 
-export const productTableColumns = [
+export const employeeTableColumns = [
     {
       header: 'Employee ID',
       accessor: 'employee_id',
@@ -51,7 +51,7 @@ export interface EmployeeSignature {
       'employee_name',
       'gender'
     ],
-    type: 'employee',
+    type: 'employees',
     idFieldFn: () => 'employee_id'
   };
   export const matchEmployeeFields = (a,b) => {

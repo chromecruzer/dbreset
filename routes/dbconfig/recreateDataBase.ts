@@ -1,11 +1,12 @@
-import * as client from "pg";
+import pkg from 'pg'; // Import the entire 'pg' module using default import
+const { Client } = pkg; // Extract the Client class from the imported 'pg' module
 import PostgresConfigFactory from "./postgresConfigFactory";
 import util from "util";
 
 const dump = (obj, depth = null) => util.inspect(obj, {depth, colors: true});
 
 export default class RecreateDatabase {
-  private client: client.Client;
+  private client: Client;
   private dbExistsSql;
   private dbCreateDbSql;
   private dbDropSchemaSql;
@@ -16,7 +17,7 @@ export default class RecreateDatabase {
   private schemaExistsSql: string;
 
   constructor(private config: PostgresConfigFactory, private deleteDb = false) {
-    this.client = new client.Client(deleteDb ? config.getRootConfig() : config.getSamConfig());
+    this.client = new Client(deleteDb ? config.getRootConfig() : config.getSamConfig());
     this.dbExistsSql = `select exists (SELECT datname FROM pg_catalog.pg_database
 WHERE lower(datname) = lower('${config.getDbName()}'));`;
     this.schemaExistsSql = `SELECT EXISTS(SELECT 1 FROM information_schema.schemata

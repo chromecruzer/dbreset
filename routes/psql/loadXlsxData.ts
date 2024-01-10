@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import * as xlsx from "exceljs"; // check ok ..xlsx
+import * as xlsx from "xlsx"; // check ok ..xlsx
 import util from "util";
 import _ from "lodash";
 import { InputToSqlMapping } from "../dataTypes";
@@ -128,26 +128,26 @@ export default class LoadXlsxData {
         header = null;
         const cellAddress = xlsx.utils.encode_cell({r:0, c:col});
         // console.log(`header cell ${dump(firstSheet[cellAddress])}`)
-        if(_.isObject(firstSheet[cellAddress])) {
-          header = firstSheet[cellAddress].w;
-          // console.log(`header for cell ${cellAddress} column ${col} is ${dump(header)}`)
-          this.headers.push(header);
-        }
+        // if(_.isObject(firstSheet[cellAddress])) {
+        //   header = firstSheet[cellAddress].w;
+        //   // console.log(`header for cell ${cellAddress} column ${col} is ${dump(header)}`)
+        //   this.headers.push(header);
+        // }
         col += 1;
       } while (header);
   }
   private async readFirstSheet(xlsxPath: string) {
     if(this.ns) {
       this.ns.notify('INFO', `reading IOL Report`,
-        `reading from ${xlsxPath}`, ['iolUpload'])
+        `reading from ${xlsxPath}`, ['iolUpload']) 
     }
     console.info(`reading from ${xlsxPath}`);
-    const buffer = await this.fs.readFile(xlsxPath)
-      .catch(err => {
-        throw new Error(`"${xlsxPath}" could not be read because ${err}`)
-      });
-    const sheets = this.xlsx.read(buffer, {type: 'buffer'});
+    // const buffer = await this.fs.readFile(xlsxPath)
+    //   .catch(err => {
+    //     throw new Error(`"${xlsxPath}" could not be read because ${err}`)
+    //   });
+    // const sheets = this.xlsx.read(buffer, {type: 'buffer'});
     // console.log(`read sheets ${dump(sheets)}`);
-    return sheets.Sheets[sheets.SheetNames[0]];
+   // return sheets.Sheets[sheets.SheetNames[0]];
   }
 }

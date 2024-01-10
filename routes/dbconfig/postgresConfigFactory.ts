@@ -1,4 +1,5 @@
-import * as fs from "fs-extra";
+import { PathLike } from 'fs';
+import fs from 'fs/promises'; // Import the 'fs' module
 export interface PostgresConfig {
     user: string;
     password: string;
@@ -13,10 +14,15 @@ export default  class PostgresConfigFactory {
     constructor(public config: PostgresConfig) {
     }
 
-    public static async load(filepath, nodeFs = fs) {
-        // console.log(`opening dbConfig at ${filepath}`);
-        const config = await nodeFs.readJSON(filepath);
-        return new PostgresConfigFactory(config);
+    public static async load(filepath: PathLike | fs.FileHandle, nodeFs = fs) {
+        try {
+            const data = await nodeFs.readFile(filepath, 'utf-8'); // Read the file content
+            const config = JSON.parse(data); // Parse the JSON content
+            return new PostgresConfigFactory(config);
+        } catch (error) {
+            console.error('Error reading JSON file:', error);
+            throw error; // Propagate the error
+        }
     }
 
     public getSamConfig() {
