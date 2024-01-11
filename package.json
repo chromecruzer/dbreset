@@ -33,6 +33,7 @@
     "@types/node": "^16.11.18",
     "@types/pg": "^8.10.9",
     "@types/pg-promise": "^5.4.3",
+    "@types/source-map-support": "^0.5.10",
     "@types/yargs": "^17.0.9"
   }
 }

@@ -5,10 +5,10 @@ export default eventHandler(() => {
 import chalk from "chalk"
 import { ali } from "./dbconfig/recreateDb"
 
-const test:any =  ali(1,2)
-const value:string = "this is value "
+const test: any = ali(1, 2)
+const value: string = "this is value "
 
-console.log(chalk.bgMagenta(value,`from dollar ${test}`))
+console.log(chalk.bgMagenta(value, `from dollar ${test}`))
 
 // code for db-reset 
 
@@ -46,7 +46,7 @@ const argv = yargs(process.argv.slice(2))
 
 const configPath = argv['configPath'];
 const removeDb = argv['clearAudits'];
-let config, recreateDb, postgresClient, loadEmployeeData;
+let config: PostgresConfigFactory, recreateDb: RecreateDatabase, postgresClient: PostgresClient, loadEmployeeData: ImportData;
 
 const testConnection = async () => {
   await recreateDb.connect();
@@ -81,7 +81,9 @@ const run = async () => {
       console.error(`Error creating schema: ${err}`);
     }
 
-    await loadEmployeeData.import(new URL('./assets/EMP_DATA.xlsx', import.meta.url).pathname, 5000);
+    const excelFilePath = path.resolve('./routes/EMP_DATA.xlsx');
+    await loadEmployeeData.import(excelFilePath, 5000);
+
     console.log('Employee table created and filled');
 
     await postgresClient.disconnect();

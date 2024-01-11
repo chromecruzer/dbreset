@@ -1,36 +1,30 @@
-import * as fs from "fs-extra";
-import * as xlsx from "xlsx"; // check ok ..xlsx
-import util from "util";
+import  fs from "fs-extra";
+import * as xlsx from "xlsx";
+import * as util from 'util'
 import _ from "lodash";
 import { InputToSqlMapping } from "../dataTypes";
-//import {NotificationsServer} from "./index";
 import NotificationsServer from "./notificationsServer";
-const dump = (obj, depth = null) => util.inspect(obj, {depth, colors: true});
+const dump = (obj: any, depth = null) => util.inspect(obj, { depth, colors: true });
 
-const checkLength = (datum, mapping, cell) => {
+const checkLength = (datum: string, mapping: InputToSqlMapping, cell: any) => {
   const regex = /char\((\d+)\)/;
   const sqlLength = parseInt(regex.test(mapping.sqlType) ? regex.exec(mapping.sqlType)[1] : '0');
-  switch (true) {
-    case sqlLength === 0:
-      return;
-    case !_.isString(datum):
-      console.error(`datum '${datum}' does not have a value ${dump(cell)} for mapping ${dump(mapping)}`);
-      return;
-    case sqlLength < datum.length:
-      console.error(`datum '${datum}' length ${datum.length} won't fit in sql ${dump(mapping)}`);
-      return;
-    default:
+
+  if (sqlLength !== 0 && !_.isString(datum)) {
+    console.error(`datum '${datum}' does not have a value ${dump(cell)} for mapping ${dump(mapping)}`);
+  } else if (sqlLength < datum.length) {
+    console.error(`datum '${datum}' length ${datum.length} won't fit in sql ${dump(mapping)}`);
   }
-}
+};
 
 export default class LoadXlsxData {
   fs = fs;
   xlsx = xlsx;
   public bulkData: (string | number | Date)[][];
-  public lotNumbers: string [];
+  public lotNumbers: string[];
   headers: string[];
 
-  constructor(protected ns = null  as (NotificationsServer | null)) {
+  constructor(protected ns: NotificationsServer | null = null) {
     this.bulkData = [];
     this.headers = [];
   }
@@ -45,8 +39,7 @@ export default class LoadXlsxData {
 
     while (emptyRowCounter < 8) {
       const lotNumber = this.findLotNumber(row, sheet);
-      // console.log(`read sheet row ${row} found ${lotNumber}`);
-      if(_.isString(lotNumber)) {
+      if (_.isString(lotNumber)) {
         newLotNumbers.push(lotNumber);
         emptyRowCounter = 0;
       } else {
@@ -54,25 +47,15 @@ export default class LoadXlsxData {
       }
       row++;
     }
-    console.log(`scanForLotNumbers found original ${newLotNumbers.length} records versus ${_.uniq(newLotNumbers).length} unique records`)
+    console.log(`scanForLotNumbers found original ${newLotNumbers.length} records versus ${_.uniq(newLotNumbers).length} unique records`);
     this.lotNumbers = newLotNumbers;
   }
 
-  private findLotNumber(row, sheet) {
+  private findLotNumber(row: number, sheet: any): string | null {
     const cellAddress = `A${row}`;
     const cell = sheet[cellAddress];
-    if (cell) {
-      // console.log(`cell contents ${dump(cell)}`);
-      switch (cell.t) {
-        case 'n':
-          return _.toString(cell.w);
-        case 's':
-          if (!_.isEmpty(cell.w)) {
-            return cell.w;
-          }
-          break;
-        default:
-      }
+    if (cell && cell.t === 's' && !_.isEmpty(cell.w)) {
+      return cell.w;
     }
     return null;
   }
@@ -81,18 +64,20 @@ export default class LoadXlsxData {
     const firstSheet = await this.readFirstSheet(xlsxPath);
     let emptyRow = false;
     this.loadHeaders(firstSheet);
-    let row = 2; //row 1 is the headers
-    // console.log(`reading with mapping ${dump(mapping)} from ${xlsxPath}`)
-    // console.log(`and received ${dump(firstSheet)}`)
+    let row = 2; // row 1 is the headers
+
+    console.log(`reading with mapping ${dump(mapping)} from ${xlsxPath}`);
     while (!emptyRow) {
       const dataRow: (Date | string | number)[] = [];
       emptyRow = true;
       mapping.forEach(c => {
         const cellAddress = `${c.xlsxAddress}${row}`;
-        let datum: (Date | string | number) = null;
+        let datum: Date | string | number = null;
+
         if (firstSheet[cellAddress] !== undefined) {
           const cellValue = firstSheet[cellAddress].w || firstSheet[cellAddress].v;
-            emptyRow = false;
+          emptyRow = false;
+
           switch (c.dataType) {
             case 'date':
               datum = new Date(cellValue);
@@ -100,20 +85,18 @@ export default class LoadXlsxData {
             case 'number':
               datum = parseInt(cellValue);
               break;
-            case 'string':
-              datum = cellValue;
-              checkLength(datum, c, firstSheet[cellAddress]);
-              break;
+              case 'string':
+                datum = String(cellValue);
+                checkLength(datum, c, firstSheet[cellAddress]);
+                break;
+            
             default:
               datum = cellValue;
           }
         }
-        // console.log(`datum ${datum} row
-        // is ${emptyRow ? '' : ' not'} empty
-        // from ${dump(firstSheet[cellAddress])}`);
-
         dataRow.push(datum);
       });
+
       if (!emptyRow) {
         this.bulkData.push(dataRow);
         row++;
@@ -121,33 +104,33 @@ export default class LoadXlsxData {
     }
   }
 
-  private loadHeaders(firstSheet) {
+  private loadHeaders(firstSheet: any) {
     let col = 0;
-    let header;
-      do {
-        header = null;
-        const cellAddress = xlsx.utils.encode_cell({r:0, c:col});
-        // console.log(`header cell ${dump(firstSheet[cellAddress])}`)
-        // if(_.isObject(firstSheet[cellAddress])) {
-        //   header = firstSheet[cellAddress].w;
-        //   // console.log(`header for cell ${cellAddress} column ${col} is ${dump(header)}`)
-        //   this.headers.push(header);
-        // }
-        col += 1;
-      } while (header);
+    let header: string | null = null;
+    do {
+      const cellAddress = xlsx.utils.encode_cell({ r: 0, c: col });
+      if (firstSheet[cellAddress]?.t === 's') {
+        header = firstSheet[cellAddress].w;
+        this.headers.push(header);
+      }
+      col += 1;
+    } while (header);
   }
+
   private async readFirstSheet(xlsxPath: string) {
-    if(this.ns) {
+    if (this.ns) {
       this.ns.notify('INFO', `reading IOL Report`,
-        `reading from ${xlsxPath}`, ['iolUpload']) 
+        `reading from ${xlsxPath}`, ['iolUpload']);
     }
     console.info(`reading from ${xlsxPath}`);
-    // const buffer = await this.fs.readFile(xlsxPath)
-    //   .catch(err => {
-    //     throw new Error(`"${xlsxPath}" could not be read because ${err}`)
-    //   });
-    // const sheets = this.xlsx.read(buffer, {type: 'buffer'});
-    // console.log(`read sheets ${dump(sheets)}`);
-   // return sheets.Sheets[sheets.SheetNames[0]];
+    
+    try {
+      const buffer = await this.fs.readFile(xlsxPath);
+      const sheets = this.xlsx.read(buffer, { type: 'buffer' });
+      return sheets.Sheets[sheets.SheetNames[0]];
+    } catch (error) {
+      console.error(`Error reading file: ${error}`);
+      throw error;
+    }
   }
 }

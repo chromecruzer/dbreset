@@ -152,7 +152,7 @@ export const recordFromArray = (row: InputDataType[], mapping: InputToSqlMapping
 }
 export const transformHelpers: { [id: string]: TransformerKeys } = {
 
-    employee: {
+    employees: {
         matchFields: 'employee_id',   // neeed to modify for employees 
         matchFn: matchEmployeeFields,
         mappings: employeeMappings,
